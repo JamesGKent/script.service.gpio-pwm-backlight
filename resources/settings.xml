@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+  <category label="32100">
+    <setting id="dimonscreensaver" type="bool" label="32101" default="true"/>
+    <setting id="dimonshutdown" type="bool" label="32102" default="true"/>
+	<setting id="dimonvideoplayback" type="bool" label="32103" default="true"/>
+	<setting id="dimonmusicplayback" type="bool" label="32104" default="true"/>
+	<setting id="lightonosd" type="bool" label="32105" default="true"/>
+	<setting id="sep1" type="sep"/>
+	<setting id="offovernight" type="bool" label="32106" default="false"/>
+	<setting id="offtime" enable="eq(-1,true)" type="time" label="32107" default="22:00"  subsetting="true"/>
+	<setting id="ontime" enable="eq(-2,true)" type="time" label="32108" default="07:00"  subsetting="true"/>
+  </category>
+  <category label="32200">
+	<setting id="gpiopin" type="number" label="32201" option="int" default="27"/>
+	<setting id="pwmfreq" type="number" label="32202" option="int" default="1000"/>
+    <setting id="brightduty" type="slider" label="32203" option="int" default="100" range="0,1,100"/>
+    <setting id="dimduty" type="slider" label="32204" option="int" default="10" range="0,1,100"/>
+    <setting id="dimtime" type="slider" label="32205" option="float" default="0.5" range="0,0.1,5"/>
+  </category>
+</settings>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<strings>
+<!--Settings-->
+  <string id="32100">When to Dim</string>
+  <string id="32101">Dim on screensaver</string>
+  <string id="32102">Dim on shutdown</string>
+  <string id="32103">Dim on video</string>
+  <string id="32104">Dim on music</string>
+  <string id="32105">Light on OSD</string>
+  <string id="32106">Turn off overnight</string>
+  <string id="32107">Off Time</string>
+  <string id="32108">On Time</string>
+  
+  <string id="32200">GPIO</string>
+  <string id="32201">GPIO Pin</string>
+  <string id="32202">PWM Frequency (Hz)</string>
+  <string id="32203">Bright Duty</string>
+  <string id="32204">Dimmed Duty</string>
+  <string id="32205">Dim Time (s)</string>
+</strings>
