@@ -2,7 +2,7 @@
 Augments the capabilities provided by the XBMC LCDProc addon to provide a PWM controlled backlight for an LCD display via the GPIO pins of the raspberry pi.
 This relies on the pigpio library being present and the system daemon running.
 See:
-https://github.com/JamesGKent/RPi2-kodi-pigpio for the raspberry pi 2 version.
+https://github.com/JamesGKent/script.module.pigpio-master for the raspberry pi 2 version.
 
 At the time of writing a version has not been compiled for the raspberry pi 1
 
