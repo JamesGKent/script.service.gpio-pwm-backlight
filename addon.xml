@@ -7,11 +7,14 @@
   </requires>
   <extension point="xbmc.service" library="main.py" start="login"></extension>
   <extension point="xbmc.addon.metadata">
-    <language></language>
     <summary>GPIO PWM LCD Backlight</summary>
     <description>Augment the service provided by XBMC LCDProc to provide a PWM controlled backlight on Raspberry Pi via GPIO.</description>
     <disclaimer>No liability taken for damaged hardware and/or software caused by this addon.</disclaimer>
     <license>GNU GENERAL PUBLIC LICENSE. Version 2, June 1991</license>
+	<language></language>
+	<forum>none</forum>
+	<email>none</email>
+	<source>https://github.com/JamesGKent/script.service.gpio-pwm-backlight</source>
     <platform>linux</platform>
   </extension>
 </addon>
