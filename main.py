@@ -41,7 +41,9 @@ class addon():
 		self.ontime = datetime.time(7,0)
 
 		# working variables
-		self.setting_check_time = None
+		self.kodi_mon = xbmc.Monitor()
+		self.kodi_mon.onSettingsChanged(self.checkSettings)
+		self.settingsChanged = False
 
 		# used for navigation tracking
 		self.oldMenu = ""
@@ -51,15 +53,7 @@ class addon():
 		self.CachedFilenameIsStream = False
 
 	def checkSettings(self):
-		if not self.setting_check_time: # if no previous check
-			self.setting_check_time = time.time() # record time of this check
-		else:
-			if (time.time() - self.setting_check_time) > 2: # if 2 seconds since last check
-				self.setting_check_time = time.time() # record time of this check
-			else:
-				return False # exit without checking
-
-		settingsChanged = False
+		self.settingsChanged = False
 
 		if not self.pi_conn: # if no pi connection has been set up
 			settingsChanged = True # force a setup
@@ -80,13 +74,14 @@ class addon():
 
 		if self.gpio_pin != gpio_pin:
 			self.gpio_pin = gpio_pin
-			settingsChanged = True
+			self.settingsChanged = True
 
 		if self.pwm_freq != pwm_freq:
 			self.pwm_freq = pwm_freq
-			settingsChanged = True
-
-		return settingsChanged
+			self.settingsChanged = True
+			
+		if self.settingsChanged:
+			self.setup_Pi_Connection()
 
 	def setup_Pi_Connection(self):
 		if self.pi_conn:
@@ -100,6 +95,7 @@ class addon():
 			pwm = self.pi_conn.get_PWM_dutycycle(self.gpio_pin)
 		except pigpio.error: # pin was not being used for PWM so assume first start
 			self.pi_conn.set_PWM_dutycycle(self.gpio_pin, 0)
+		self.settingsChanged = False
 			
 	def do_backlight(self, pwm, target_pwm):
 		if self.dim_time != 0:
@@ -223,10 +219,10 @@ class addon():
 
 	def mainloop(self):
 #		log(xbmc.LOGNOTICE, "mainloop")
+		self.checkSettings() # get initial setup
 		while not xbmc.abortRequested: # enter loop that will exit on XBMC/kodi exit
-			if self.checkSettings(): # see if settings have changed
-				self.setup_Pi_Connection() # if settings have changed that require a reconnect then reconnect
-			self.handle_backlight() # see if should light/dim and handle it
+			if not self.settingsChanged: #if no settings have changed that have not yet been acted upon
+				self.handle_backlight() # see if should light/dim and handle it
 			time.sleep(0.2) # sleep to prevent high CPU usage
 
 		if self.dimonshutdown:
