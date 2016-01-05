@@ -8,11 +8,11 @@ import datetime
 
 __settings__   = xbmcaddon.Addon(id='script.service.gpio-pwm-backlight')
 __cwd__        = __settings__.getAddonInfo('path')
-__icon__       = os.path.join(__cwd__,"icon.png")
+__icon__       = os.path.join(__cwd__, "icon.png")
 __scriptname__ = "GPIO PWM LCD Backlight"
 
-WINDOW_FULLSCREEN_VIDEO = 12005 # when video is playing fullscreen
-WINDOW_VISUALISATION 	= 12006 # when audio is playing fullscreen
+WINDOW_FULLSCREEN_VIDEO = 12005  # when video is playing fullscreen
+WINDOW_VISUALISATION 	= 12006  # when audio is playing fullscreen
 
 def log(loglevel, msg):
 	xbmc.log("### [%s] - %s" % (__scriptname__,msg,), level=loglevel)
@@ -41,9 +41,7 @@ class addon():
 		self.ontime = datetime.time(7,0)
 
 		# working variables
-		self.kodi_mon = xbmc.Monitor()
-		self.kodi_mon.onSettingsChanged(self.checkSettings)
-		self.settingsChanged = False
+		self.setting_check_time = None
 
 		# used for navigation tracking
 		self.oldMenu = ""
@@ -53,14 +51,22 @@ class addon():
 		self.CachedFilenameIsStream = False
 
 	def checkSettings(self):
-		self.settingsChanged = False
+		if not self.setting_check_time: # if no previous check
+			self.setting_check_time = time.time() # record time of this check
+		else:
+			if (time.time() - self.setting_check_time) > 2: # if 2 seconds since last check
+				self.setting_check_time = time.time() # record time of this check
+			else:
+				return False # exit without checking
+
+		settingsChanged = False
 
 		if not self.pi_conn: # if no pi connection has been set up
 			settingsChanged = True # force a setup
 
 		gpio_pin = int(__settings__.getSetting("gpiopin"))
 		pwm_freq = int(__settings__.getSetting("pwmfreq"))
-		self.bright_duty =int( __settings__.getSetting("brightduty"))
+		self.bright_duty =int(__settings__.getSetting("brightduty"))
 		self.dim_duty = int(__settings__.getSetting("dimduty"))
 		self.dim_time = float(__settings__.getSetting("dimtime"))
 		self.dimonscreensaver = __settings__.getSetting("dimonscreensaver") == "true"
@@ -74,14 +80,13 @@ class addon():
 
 		if self.gpio_pin != gpio_pin:
 			self.gpio_pin = gpio_pin
-			self.settingsChanged = True
+			settingsChanged = True
 
 		if self.pwm_freq != pwm_freq:
 			self.pwm_freq = pwm_freq
-			self.settingsChanged = True
-			
-		if self.settingsChanged:
-			self.setup_Pi_Connection()
+			settingsChanged = True
+
+		return settingsChanged
 
 	def setup_Pi_Connection(self):
 		if self.pi_conn:
@@ -95,8 +100,7 @@ class addon():
 			pwm = self.pi_conn.get_PWM_dutycycle(self.gpio_pin)
 		except pigpio.error: # pin was not being used for PWM so assume first start
 			self.pi_conn.set_PWM_dutycycle(self.gpio_pin, 0)
-		self.settingsChanged = False
-			
+
 	def do_backlight(self, pwm, target_pwm):
 		if self.dim_time != 0:
 			delay = self.dim_time / (abs(pwm - target_pwm))
@@ -180,13 +184,13 @@ class addon():
 
 	def isPlayingAudio(self):
 		return self.getBool("Player.HasAudio")
-	
+
 	def isPlayerPlaying(self):
 		return self.getBool("Player.Playing")
 
 	def isPlayerPaused(self):
 		return self.getBool("Player.Paused")
-	
+
 	def isShowingOSD(self):
 		if self.getInfoLabel("System.CurrentWindow") in ["Fullscreen OSD"]:
 			return True
@@ -203,7 +207,7 @@ class addon():
 		if menu != self.oldMenu or subMenu != self.oldSubMenu or (self.navTimer + navtimeout) > time.time():
 			ret = True
 			if menu != self.oldMenu or subMenu != self.oldSubMenu:
-				self.navTimer = time.time()      
+				self.navTimer = time.time()
 				self.oldMenu = menu
 				self.oldSubMenu = subMenu
 
@@ -219,10 +223,10 @@ class addon():
 
 	def mainloop(self):
 #		log(xbmc.LOGNOTICE, "mainloop")
-		self.checkSettings() # get initial setup
 		while not xbmc.abortRequested: # enter loop that will exit on XBMC/kodi exit
-			if not self.settingsChanged: #if no settings have changed that have not yet been acted upon
-				self.handle_backlight() # see if should light/dim and handle it
+			if self.checkSettings(): # see if settings have changed
+				self.setup_Pi_Connection() # if settings have changed that require a reconnect then reconnect
+			self.handle_backlight() # see if should light/dim and handle it
 			time.sleep(0.2) # sleep to prevent high CPU usage
 
 		if self.dimonshutdown:
